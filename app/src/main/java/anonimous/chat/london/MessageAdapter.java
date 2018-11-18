@@ -1,4 +1,4 @@
-package com.google.firebase.udacity.friendlychat;
+package anonimous.chat.london;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.udacity.friendlychat.R;
 
 import java.util.List;
 
