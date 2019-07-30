@@ -2,46 +2,25 @@ package anonimous.chat.london
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-
 import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.tasks.Continuation
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuth.AuthStateListener
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
+import java.util.*
+import android.graphics.drawable.ColorDrawable
 
-import java.util.ArrayList
-import java.util.HashMap
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,9 +38,8 @@ class MainActivity : AppCompatActivity() {
     private var mMessagesDatabaseReference: DatabaseReference? = null
     private var mChildEventListener: ChildEventListener? = null
     private var mFirebaseAuth: FirebaseAuth? = null
-    private var mAuthStateListener: AuthStateListener? = null
+    private var mAuthStateListener: FirebaseAuth.AuthStateListener? = null
     private var mFirebaseStorage: FirebaseStorage? = null
-    private var mChatPhotosStorageReference: StorageReference? = null
     private var mFirebaseRemoteConfig: FirebaseRemoteConfig? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,16 +53,14 @@ class MainActivity : AppCompatActivity() {
         mFirebaseAuth = FirebaseAuth.getInstance()
         mFirebaseStorage = FirebaseStorage.getInstance()
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
-
         mMessagesDatabaseReference = mFirebaseDatabase!!.reference.child("messages")
-        mChatPhotosStorageReference = mFirebaseStorage!!.reference.child("chat_photos")
 
         // Initialize references to views
-        mProgressBar = findViewById<View>(R.id.progressBar) as ProgressBar
-        mMessageListView = findViewById<View>(R.id.messageListView) as ListView
-        mPhotoPickerButton = findViewById<View>(R.id.photoPickerButton) as ImageButton
-        mMessageEditText = findViewById<View>(R.id.messageEditText) as EditText
-        mSendButton = findViewById<View>(R.id.sendButton) as Button
+        mProgressBar = findViewById<ProgressBar>(R.id.progressBar)
+        mMessageListView = findViewById<ListView>(R.id.messageListView)
+        mPhotoPickerButton = findViewById<ImageButton>(R.id.photoPickerButton)
+        mMessageEditText = findViewById<EditText>(R.id.messageEditText)
+        mSendButton = findViewById<Button>(R.id.sendButton)
 
         // Initialize message ListView and its adapter
         val friendlyMessages = ArrayList<FriendlyMessage>()
@@ -107,11 +83,7 @@ class MainActivity : AppCompatActivity() {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
 
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                if (charSequence.toString().trim { it <= ' ' }.length > 0) {
-                    mSendButton!!.isEnabled = true
-                } else {
-                    mSendButton!!.isEnabled = false
-                }
+                mSendButton!!.isEnabled = charSequence.toString().trim { it <= ' ' }.isNotEmpty()
             }
 
             override fun afterTextChanged(editable: Editable) {}
@@ -120,14 +92,14 @@ class MainActivity : AppCompatActivity() {
 
         // Send button sends a message and clears the EditText
         mSendButton!!.setOnClickListener {
-            val friendlyMessage = FriendlyMessage(mMessageEditText!!.text.toString(), mUsername!!, null!!)
+            val friendlyMessage = FriendlyMessage(mMessageEditText!!.text.toString(), mUsername, null)
             mMessagesDatabaseReference!!.push().setValue(friendlyMessage)
 
             // Clear input box
             mMessageEditText!!.setText("")
         }
 
-        mAuthStateListener = AuthStateListener { firebaseAuth ->
+        mAuthStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             if (user != null) {
                 // User is signed in
@@ -141,11 +113,10 @@ class MainActivity : AppCompatActivity() {
                                 .setIsSmartLockEnabled(false)
                                 .enableAnonymousUsersAutoUpgrade()
                                 .setAvailableProviders(arrayListOf(
+                                        AuthUI.IdpConfig.AnonymousBuilder().build(),
                                         AuthUI.IdpConfig.EmailBuilder().build(),
-                                        AuthUI.IdpConfig.PhoneBuilder().build()/*,
-                                        AuthUI.IdpConfig.GoogleBuilder().build(),
-                                        AuthUI.IdpConfig.FacebookBuilder().build(),
-                                        AuthUI.IdpConfig.TwitterBuilder().build())*/
+                                        AuthUI.IdpConfig.PhoneBuilder().build(),
+                                        AuthUI.IdpConfig.GoogleBuilder().build()
                                 ))
                                 .build(),
                         RC_SIGN_IN)
@@ -153,47 +124,25 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val defaultConfigMap = HashMap<String, Any>()
-        defaultConfigMap[FRIENDLY_MSG_LENGTH_KEY] = DEFAULT_MSG_LENGTH_LIMIT
-        mFirebaseRemoteConfig!!.setDefaults(defaultConfigMap)
-        fetchConfig()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            RC_SIGN_IN -> if (resultCode == Activity.RESULT_OK) {
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == Activity.RESULT_OK) {
+                // Sign-in succeeded, set up the UI
                 Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show()
             } else if (resultCode == Activity.RESULT_CANCELED) {
+                // Sign in was canceled by the user, finish the activity
                 Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show()
                 finish()
             }
-            RC_PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(this, "picker in!", Toast.LENGTH_SHORT).show()
-                val selectedImageUri = data!!.data
+        } else if (requestCode == RC_PHOTO_PICKER && resultCode == Activity.RESULT_OK) {
 
-                val photoRef = mChatPhotosStorageReference!!.child(selectedImageUri!!.lastPathSegment!!)
-                photoRef.putFile(selectedImageUri)
-                        .continueWithTask { task ->
-                            if (!task.isSuccessful) {
-                                throw task.getException()!!
-                            }
 
-                            photoRef.downloadUrl
-                        }.addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                val downloadUri = task.result
-                                val friendlyMessage = FriendlyMessage(null!!, mUsername!!, downloadUri!!.toString())
-                                mMessagesDatabaseReference!!.push().setValue(friendlyMessage)
-                            } else {
-                            }
-                        }
-            }
-
-            else -> Toast.makeText(this, "Something Wrong", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -216,12 +165,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        when (item.itemId) {
             R.id.sign_out_menu -> {
                 AuthUI.getInstance().signOut(this)
-                true
+                return true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
     }
 
@@ -245,11 +194,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) {}
-
                 override fun onChildRemoved(dataSnapshot: DataSnapshot) {}
-
                 override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {}
-
                 override fun onCancelled(databaseError: DatabaseError) {}
             }
             mMessagesDatabaseReference!!.addChildEventListener(mChildEventListener!!)
@@ -266,15 +212,23 @@ class MainActivity : AppCompatActivity() {
     // Fetch the config to determine the allowed length of messages.
     fun fetchConfig() {
         var cacheExpiration: Long = 3600 // 1 hour in seconds
+        // If developer mode is enabled reduce cacheExpiration to 0 so that each fetch goes to the
+        // server. This should not be used in release builds.
         if (mFirebaseRemoteConfig!!.info.configSettings.isDeveloperModeEnabled) {
             cacheExpiration = 0
         }
         mFirebaseRemoteConfig!!.fetch(cacheExpiration)
                 .addOnSuccessListener {
+                    // Make the fetched config available
+                    // via FirebaseRemoteConfig get<type> calls, e.g., getLong, getString.
                     mFirebaseRemoteConfig!!.activateFetched()
+
+                    // Update the EditText length limit with
+                    // the newly retrieved values from Remote Config.
                     applyRetrievedLengthLimit()
                 }
                 .addOnFailureListener { e ->
+                    // An error occurred when fetching the config.
                     Log.w(TAG, "Error fetching config", e)
 
                     // Update the EditText length limit with
@@ -282,6 +236,7 @@ class MainActivity : AppCompatActivity() {
                     applyRetrievedLengthLimit()
                 }
     }
+
 
     private fun applyRetrievedLengthLimit() {
         val friendly_msg_length = mFirebaseRemoteConfig!!.getLong(FRIENDLY_MSG_LENGTH_KEY)

@@ -18,9 +18,9 @@ class MessageAdapter(context: Context, resource: Int, objects: List<FriendlyMess
             convertView = (context as Activity).layoutInflater.inflate(R.layout.item_message, parent, false)
         }
 
-        val photoImageView = convertView!!.findViewById<View>(R.id.photoImageView) as ImageView
-        val messageTextView = convertView.findViewById<View>(R.id.messageTextView) as TextView
-        val authorTextView = convertView.findViewById<View>(R.id.nameTextView) as TextView
+        val photoImageView = convertView!!.findViewById(R.id.photoImageView) as ImageView
+        val messageTextView = convertView.findViewById(R.id.messageTextView) as TextView
+        val authorTextView = convertView.findViewById(R.id.nameTextView) as TextView
 
         val message = getItem(position)
 

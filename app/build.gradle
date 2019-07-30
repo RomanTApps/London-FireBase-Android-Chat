@@ -19,8 +19,8 @@ android {
         applicationId "anonimous.chat.london"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        versionCode 4070402
+        versionName "4070401"
     }
     buildTypes {
         release {
