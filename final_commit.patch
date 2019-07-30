@@ -1,0 +1,566 @@
+Index: app/src/main/java/anonimous/chat/london/FriendlyMessage.kt
+===================================================================
+--- app/src/main/java/anonimous/chat/london/FriendlyMessage.kt	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/java/anonimous/chat/london/FriendlyMessage.kt	(revision e9e89fa470d96800605b116ce33aee132df2c528)
+@@ -1,16 +0,0 @@
+-package anonimous.chat.london
+-
+-class FriendlyMessage {
+-
+-    var text: String? = null
+-    var name: String? = null
+-    var photoUrl: String? = null
+-
+-    constructor() {}
+-
+-    constructor(text: String, name: String, photoUrl: String) {
+-        this.text = text
+-        this.name = name
+-        this.photoUrl = photoUrl
+-    }
+-}
+Index: app/src/main/res/layout/activity_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_main.xml	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/res/layout/activity_main.xml	(date 1564523424750)
+@@ -1,6 +1,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <RelativeLayout
+     xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+@@ -8,7 +9,14 @@
+     android:paddingLeft="@dimen/activity_horizontal_margin"
+     android:paddingRight="@dimen/activity_horizontal_margin"
+     android:paddingTop="@dimen/activity_vertical_margin"
+-    tools:context="com.google.firebase.udacity.friendlychat.anonimous.chat.london.MainActivity">
++    tools:context="anonimous.chat.london.MainActivity">
++
++<!--    <ImageView
++        android:id="@+id/imageView"
++        android:layout_width="wrap_content"
++        android:layout_height="wrap_content"
++        android:scaleType="center"
++        android:src="@drawable/back" />-->
+ 
+     <ListView
+         android:id="@+id/messageListView"
+@@ -18,7 +26,9 @@
+         android:stackFromBottom="true"
+         android:divider="@android:color/transparent"
+         android:transcriptMode="alwaysScroll"
+-        tools:listitem="@layout/item_message"/>
++        tools:listitem="@layout/item_message">
++
++    </ListView>
+ 
+     <LinearLayout
+         android:id="@+id/linearLayout"
+@@ -30,6 +40,7 @@
+         android:orientation="horizontal">
+ 
+         <ImageButton
++            android:visibility="gone"
+             android:id="@+id/photoPickerButton"
+             android:layout_width="36dp"
+             android:layout_height="36dp"
+@@ -59,4 +70,5 @@
+         android:layout_height="wrap_content"
+         android:layout_centerHorizontal="true"
+         android:layout_centerVertical="true"/>
++
+ </RelativeLayout>
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build.gradle	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/build.gradle	(date 1564525518412)
+@@ -19,8 +19,8 @@
+         applicationId "anonimous.chat.london"
+         minSdkVersion 16
+         targetSdkVersion 28
+-        versionCode 1
+-        versionName "1.0"
++        versionCode 4070402
++        versionName "4070401"
+     }
+     buildTypes {
+         release {
+Index: app/src/main/res/menu/main_menu.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/menu/main_menu.xml	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/res/menu/main_menu.xml	(date 1564524023569)
+@@ -2,7 +2,8 @@
+ <menu xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:app="http://schemas.android.com/apk/res-auto">
+     <item
++        android:icon="@drawable/logout"
+         android:id="@+id/sign_out_menu"
+         android:title="@string/sign_out"
+-        app:showAsAction="never"/>
++        app:showAsAction="always"/>
+ </menu>
+\ No newline at end of file
+Index: app/src/main/java/anonimous/chat/london/MessageAdapter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/anonimous/chat/london/MessageAdapter.kt	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/java/anonimous/chat/london/MessageAdapter.kt	(date 1564489410596)
+@@ -18,9 +18,9 @@
+             convertView = (context as Activity).layoutInflater.inflate(R.layout.item_message, parent, false)
+         }
+ 
+-        val photoImageView = convertView!!.findViewById<View>(R.id.photoImageView) as ImageView
+-        val messageTextView = convertView.findViewById<View>(R.id.messageTextView) as TextView
+-        val authorTextView = convertView.findViewById<View>(R.id.nameTextView) as TextView
++        val photoImageView = convertView!!.findViewById(R.id.photoImageView) as ImageView
++        val messageTextView = convertView.findViewById(R.id.messageTextView) as TextView
++        val authorTextView = convertView.findViewById(R.id.nameTextView) as TextView
+ 
+         val message = getItem(position)
+ 
+@@ -40,4 +40,4 @@
+ 
+         return convertView
+     }
+-}
++}
+\ No newline at end of file
+Index: app/src/main/res/layout/item_message.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/item_message.xml	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/res/layout/item_message.xml	(date 1564494381207)
+@@ -15,17 +15,15 @@
+ 
+     <TextView
+         android:id="@+id/messageTextView"
+-        android:layout_width="wrap_content"
++        android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+-        android:layout_weight="0"
+         android:textAppearance="?android:attr/textAppearanceLarge"
+         tools:text="Message" />
+ 
+     <TextView
+         android:id="@+id/nameTextView"
+-        android:layout_width="wrap_content"
++        android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+-        android:layout_weight="0"
+         android:textAppearance="?android:attr/textAppearanceSmall"
+         tools:text="Name" />
+ 
+Index: app/src/main/res/values/strings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/strings.xml	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/res/values/strings.xml	(date 1564524229619)
+@@ -1,5 +1,5 @@
+ <resources>
+-    <string name="app_name">Friendly Chat</string>
++    <string name="app_name">London Chat</string>
+     <string name="sign_out">Sign Out</string>
+     <string name="send_button_label">Send</string>
+ </resources>
+Index: app/src/main/java/anonimous/chat/london/FriendlyMessage.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/anonimous/chat/london/FriendlyMessage.java	(date 1564488304730)
++++ app/src/main/java/anonimous/chat/london/FriendlyMessage.java	(date 1564488304730)
+@@ -0,0 +1,41 @@
++package anonimous.chat.london;
++
++public class FriendlyMessage {
++
++    private String text;
++    private String name;
++    private String photoUrl;
++
++    public FriendlyMessage() {
++    }
++
++    public FriendlyMessage(String text, String name, String photoUrl) {
++        this.text = text;
++        this.name = name;
++        this.photoUrl = photoUrl;
++    }
++
++    public String getText() {
++        return text;
++    }
++
++    public void setText(String text) {
++        this.text = text;
++    }
++
++    public String getName() {
++        return name;
++    }
++
++    public void setName(String name) {
++        this.name = name;
++    }
++
++    public String getPhotoUrl() {
++        return photoUrl;
++    }
++
++    public void setPhotoUrl(String photoUrl) {
++        this.photoUrl = photoUrl;
++    }
++}
+\ No newline at end of file
+Index: app/src/main/java/anonimous/chat/london/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/anonimous/chat/london/MainActivity.kt	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/java/anonimous/chat/london/MainActivity.kt	(date 1564525949004)
+@@ -2,46 +2,25 @@
+ 
+ import android.app.Activity
+ import android.content.Intent
+-import android.net.Uri
+ import android.os.Bundle
+ import android.text.Editable
+ import android.text.InputFilter
+ import android.text.TextWatcher
+ import android.util.Log
+ import android.view.Menu
+-import android.view.MenuInflater
+ import android.view.MenuItem
+-import android.view.View
+-import android.widget.Button
+-import android.widget.EditText
+-import android.widget.ImageButton
+-import android.widget.ListView
+-import android.widget.ProgressBar
+-import android.widget.Toast
++import android.widget.*
+ import androidx.appcompat.app.AppCompatActivity
+-
+ import com.firebase.ui.auth.AuthUI
+-import com.google.android.gms.tasks.Continuation
+-import com.google.android.gms.tasks.OnCompleteListener
+-import com.google.android.gms.tasks.OnFailureListener
+-import com.google.android.gms.tasks.OnSuccessListener
+-import com.google.android.gms.tasks.Task
+ import com.google.firebase.auth.FirebaseAuth
+-import com.google.firebase.auth.FirebaseAuth.AuthStateListener
+-import com.google.firebase.auth.FirebaseUser
+-import com.google.firebase.database.ChildEventListener
+-import com.google.firebase.database.DataSnapshot
+-import com.google.firebase.database.DatabaseError
+-import com.google.firebase.database.DatabaseReference
+-import com.google.firebase.database.FirebaseDatabase
++import com.google.firebase.database.*
+ import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
+ import com.google.firebase.storage.FirebaseStorage
+-import com.google.firebase.storage.StorageReference
+-import com.google.firebase.storage.UploadTask
++import java.util.*
++import android.graphics.drawable.ColorDrawable
++
+ 
+-import java.util.ArrayList
+-import java.util.HashMap
++
+ 
+ class MainActivity : AppCompatActivity() {
+ 
+@@ -59,9 +38,8 @@
+     private var mMessagesDatabaseReference: DatabaseReference? = null
+     private var mChildEventListener: ChildEventListener? = null
+     private var mFirebaseAuth: FirebaseAuth? = null
+-    private var mAuthStateListener: AuthStateListener? = null
++    private var mAuthStateListener: FirebaseAuth.AuthStateListener? = null
+     private var mFirebaseStorage: FirebaseStorage? = null
+-    private var mChatPhotosStorageReference: StorageReference? = null
+     private var mFirebaseRemoteConfig: FirebaseRemoteConfig? = null
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+@@ -75,16 +53,14 @@
+         mFirebaseAuth = FirebaseAuth.getInstance()
+         mFirebaseStorage = FirebaseStorage.getInstance()
+         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+-
+         mMessagesDatabaseReference = mFirebaseDatabase!!.reference.child("messages")
+-        mChatPhotosStorageReference = mFirebaseStorage!!.reference.child("chat_photos")
+ 
+         // Initialize references to views
+-        mProgressBar = findViewById<View>(R.id.progressBar) as ProgressBar
+-        mMessageListView = findViewById<View>(R.id.messageListView) as ListView
+-        mPhotoPickerButton = findViewById<View>(R.id.photoPickerButton) as ImageButton
+-        mMessageEditText = findViewById<View>(R.id.messageEditText) as EditText
+-        mSendButton = findViewById<View>(R.id.sendButton) as Button
++        mProgressBar = findViewById<ProgressBar>(R.id.progressBar)
++        mMessageListView = findViewById<ListView>(R.id.messageListView)
++        mPhotoPickerButton = findViewById<ImageButton>(R.id.photoPickerButton)
++        mMessageEditText = findViewById<EditText>(R.id.messageEditText)
++        mSendButton = findViewById<Button>(R.id.sendButton)
+ 
+         // Initialize message ListView and its adapter
+         val friendlyMessages = ArrayList<FriendlyMessage>()
+@@ -107,11 +83,7 @@
+             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
+ 
+             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+-                if (charSequence.toString().trim { it <= ' ' }.length > 0) {
+-                    mSendButton!!.isEnabled = true
+-                } else {
+-                    mSendButton!!.isEnabled = false
+-                }
++                mSendButton!!.isEnabled = charSequence.toString().trim { it <= ' ' }.isNotEmpty()
+             }
+ 
+             override fun afterTextChanged(editable: Editable) {}
+@@ -120,14 +92,14 @@
+ 
+         // Send button sends a message and clears the EditText
+         mSendButton!!.setOnClickListener {
+-            val friendlyMessage = FriendlyMessage(mMessageEditText!!.text.toString(), mUsername!!, null!!)
++            val friendlyMessage = FriendlyMessage(mMessageEditText!!.text.toString(), mUsername, null)
+             mMessagesDatabaseReference!!.push().setValue(friendlyMessage)
+ 
+             // Clear input box
+             mMessageEditText!!.setText("")
+         }
+ 
+-        mAuthStateListener = AuthStateListener { firebaseAuth ->
++        mAuthStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+             val user = firebaseAuth.currentUser
+             if (user != null) {
+                 // User is signed in
+@@ -141,11 +113,10 @@
+                                 .setIsSmartLockEnabled(false)
+                                 .enableAnonymousUsersAutoUpgrade()
+                                 .setAvailableProviders(arrayListOf(
++                                        AuthUI.IdpConfig.AnonymousBuilder().build(),
+                                         AuthUI.IdpConfig.EmailBuilder().build(),
+-                                        AuthUI.IdpConfig.PhoneBuilder().build()/*,
+-                                        AuthUI.IdpConfig.GoogleBuilder().build(),
+-                                        AuthUI.IdpConfig.FacebookBuilder().build(),
+-                                        AuthUI.IdpConfig.TwitterBuilder().build())*/
++                                        AuthUI.IdpConfig.PhoneBuilder().build(),
++                                        AuthUI.IdpConfig.GoogleBuilder().build()
+                                 ))
+                                 .build(),
+                         RC_SIGN_IN)
+@@ -153,47 +124,25 @@
+         }
+ 
+ 
+-        val defaultConfigMap = HashMap<String, Any>()
+-        defaultConfigMap[FRIENDLY_MSG_LENGTH_KEY] = DEFAULT_MSG_LENGTH_LIMIT
+-        mFirebaseRemoteConfig!!.setDefaults(defaultConfigMap)
+-        fetchConfig()
+     }
+ 
+-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
++    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+         super.onActivityResult(requestCode, resultCode, data)
+-
+-        when (requestCode) {
+-            RC_SIGN_IN -> if (resultCode == Activity.RESULT_OK) {
++        if (requestCode == RC_SIGN_IN) {
++            if (resultCode == Activity.RESULT_OK) {
++                // Sign-in succeeded, set up the UI
+                 Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show()
+             } else if (resultCode == Activity.RESULT_CANCELED) {
++                // Sign in was canceled by the user, finish the activity
+                 Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show()
+                 finish()
+             }
+-            RC_PHOTO_PICKER -> if (resultCode == Activity.RESULT_OK) {
+-                Toast.makeText(this, "picker in!", Toast.LENGTH_SHORT).show()
+-                val selectedImageUri = data!!.data
++        } else if (requestCode == RC_PHOTO_PICKER && resultCode == Activity.RESULT_OK) {
+ 
+-                val photoRef = mChatPhotosStorageReference!!.child(selectedImageUri!!.lastPathSegment!!)
+-                photoRef.putFile(selectedImageUri)
+-                        .continueWithTask { task ->
+-                            if (!task.isSuccessful) {
+-                                throw task.getException()!!
+-                            }
+ 
+-                            photoRef.downloadUrl
+-                        }.addOnCompleteListener { task ->
+-                            if (task.isSuccessful) {
+-                                val downloadUri = task.result
+-                                val friendlyMessage = FriendlyMessage(null!!, mUsername!!, downloadUri!!.toString())
+-                                mMessagesDatabaseReference!!.push().setValue(friendlyMessage)
+-                            } else {
+-                            }
+-                        }
+-            }
++        }
++    }
+ 
+-            else -> Toast.makeText(this, "Something Wrong", Toast.LENGTH_SHORT).show()
+-        }
+-    }
+ 
+     override fun onResume() {
+         super.onResume()
+@@ -216,12 +165,12 @@
+     }
+ 
+     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+-        return when (item.itemId) {
++        when (item.itemId) {
+             R.id.sign_out_menu -> {
+                 AuthUI.getInstance().signOut(this)
+-                true
++                return true
+             }
+-            else -> super.onOptionsItemSelected(item)
++            else -> return super.onOptionsItemSelected(item)
+         }
+     }
+ 
+@@ -245,11 +194,8 @@
+                 }
+ 
+                 override fun onChildChanged(dataSnapshot: DataSnapshot, s: String?) {}
+-
+                 override fun onChildRemoved(dataSnapshot: DataSnapshot) {}
+-
+                 override fun onChildMoved(dataSnapshot: DataSnapshot, s: String?) {}
+-
+                 override fun onCancelled(databaseError: DatabaseError) {}
+             }
+             mMessagesDatabaseReference!!.addChildEventListener(mChildEventListener!!)
+@@ -266,15 +212,23 @@
+     // Fetch the config to determine the allowed length of messages.
+     fun fetchConfig() {
+         var cacheExpiration: Long = 3600 // 1 hour in seconds
++        // If developer mode is enabled reduce cacheExpiration to 0 so that each fetch goes to the
++        // server. This should not be used in release builds.
+         if (mFirebaseRemoteConfig!!.info.configSettings.isDeveloperModeEnabled) {
+             cacheExpiration = 0
+         }
+         mFirebaseRemoteConfig!!.fetch(cacheExpiration)
+                 .addOnSuccessListener {
++                    // Make the fetched config available
++                    // via FirebaseRemoteConfig get<type> calls, e.g., getLong, getString.
+                     mFirebaseRemoteConfig!!.activateFetched()
++
++                    // Update the EditText length limit with
++                    // the newly retrieved values from Remote Config.
+                     applyRetrievedLengthLimit()
+                 }
+                 .addOnFailureListener { e ->
++                    // An error occurred when fetching the config.
+                     Log.w(TAG, "Error fetching config", e)
+ 
+                     // Update the EditText length limit with
+@@ -283,6 +237,7 @@
+                 }
+     }
+ 
++
+     private fun applyRetrievedLengthLimit() {
+         val friendly_msg_length = mFirebaseRemoteConfig!!.getLong(FRIENDLY_MSG_LENGTH_KEY)
+         mMessageEditText!!.filters = arrayOf<InputFilter>(InputFilter.LengthFilter(friendly_msg_length.toInt()))
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/AndroidManifest.xml	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/AndroidManifest.xml	(date 1564446080606)
+@@ -2,6 +2,9 @@
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+     package="anonimous.chat.london">
+ 
++    <uses-permission android:name="android.permission.INTERNET"/>
++    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
++
+     <application
+         android:allowBackup="true"
+         android:icon="@mipmap/ic_launcher"
+Index: app/src/main/res/drawable/button_selector.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/button_selector.xml	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/res/drawable/button_selector.xml	(date 1564523705493)
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <selector xmlns:android="http://schemas.android.com/apk/res/android">
+-    <item android:color="#999999" android:state_enabled="false"/>
+-    <item android:color="@color/colorAccent" android:state_enabled="true"/>
++    <item android:color="#FFFFFF" android:state_enabled="false"/>
++    <item android:color="#C8102E" android:state_enabled="true"/>
+ </selector>
+\ No newline at end of file
+Index: app/src/main/res/values/styles.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/styles.xml	(revision e9e89fa470d96800605b116ce33aee132df2c528)
++++ app/src/main/res/values/styles.xml	(date 1564524199906)
+@@ -3,17 +3,13 @@
+     <!-- Base application theme. -->
+     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+         <!-- Customize your theme here. -->
+-        <item name="colorPrimary">@color/colorPrimary</item>
+-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+-        <item name="colorAccent">@color/colorAccent</item>
+-
+-        <item name="android:colorButtonNormal">@drawable/button_selector</item>
++        <item name="colorPrimary">#C8102E</item>
++        <item name="colorPrimaryDark">#012169</item>
++        <item name="colorAccent">#FFFFFF</item>
+         <item name="colorButtonNormal">@drawable/button_selector</item>
+-        <item name="android:buttonStyle">@style/FriendlyButtonStyle</item>
+     </style>
+ 
+     <style name="FriendlyButtonStyle" parent="Widget.AppCompat.Button">
+         <item name="android:textColor">@color/colorTitle</item>
+-
+     </style>
+ </resources>
+Index: app/src/main/res/drawable/logout.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/logout.xml	(date 1564524087488)
++++ app/src/main/res/drawable/logout.xml	(date 1564524087488)
+@@ -0,0 +1,12 @@
++<vector xmlns:android="http://schemas.android.com/apk/res/android"
++    android:width="512dp"
++    android:height="512dp"
++    android:viewportWidth="512.0053"
++    android:viewportHeight="512">
++  <path
++      android:fillColor="#FFFFFF"
++      android:pathData="m320,277.336c-11.797,0 -21.332,9.559 -21.332,21.332v85.336c0,11.754 -9.559,21.332 -21.336,21.332h-64v-320c0,-18.219 -11.605,-34.496 -29.055,-40.555l-6.316,-2.113h99.371c11.777,0 21.336,9.578 21.336,21.336v64c0,11.773 9.535,21.332 21.332,21.332s21.332,-9.559 21.332,-21.332v-64c0,-35.285 -28.715,-64 -64,-64h-229.332c-0.813,0 -1.492,0.363 -2.281,0.469 -1.027,-0.086 -2.008,-0.469 -3.051,-0.469 -23.531,0 -42.668,19.133 -42.668,42.664v384c0,18.219 11.605,34.496 29.055,40.555l128.387,42.797c4.352,1.344 8.68,1.984 13.227,1.984 23.531,0 42.664,-19.137 42.664,-42.668v-21.332h64c35.285,0 64,-28.715 64,-64v-85.336c0,-11.773 -9.535,-21.332 -21.332,-21.332zM320,277.336"/>
++  <path
++      android:fillColor="#FFFFFF"
++      android:pathData="m505.75,198.254 l-85.336,-85.332c-6.098,-6.102 -15.273,-7.938 -23.25,-4.633 -7.957,3.309 -13.164,11.094 -13.164,19.715v64h-85.332c-11.777,0 -21.336,9.555 -21.336,21.332 0,11.777 9.559,21.332 21.336,21.332h85.332v64c0,8.621 5.207,16.406 13.164,19.715 7.977,3.305 17.152,1.469 23.25,-4.629l85.336,-85.336c8.34,-8.34 8.34,-21.824 0,-30.164zM505.75,198.254"/>
++</vector>
